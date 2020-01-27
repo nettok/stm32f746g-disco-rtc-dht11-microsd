@@ -367,7 +367,6 @@ void SystemClock_Config(void)
   */
 static void MX_RTC_Init(void)
 {
-
   /* USER CODE BEGIN RTC_Init 0 */
 
   /* USER CODE END RTC_Init 0 */
@@ -391,24 +390,36 @@ static void MX_RTC_Init(void)
   }
 
   /* USER CODE BEGIN Check_RTC_BKUP */
-    
+
+  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR1) == 0x777) {
+	  // If clock has been already initialized, only set the alarm interrupt
+	  HAL_RTC_GetAlarm(&hrtc, &sAlarm, RTC_ALARM_A, RTC_FORMAT_BIN);
+	  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK) {
+		  Error_Handler();
+	  }
+	  return;
+  } else {
+	  // Store already-initialized status code in a backup register
+	  HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR1, 0x777);
+  }
+
   /* USER CODE END Check_RTC_BKUP */
 
   /** Initialize RTC and set the Time and Date 
   */
-  sTime.Hours = 0;
-  sTime.Minutes = 0;
-  sTime.Seconds = 0;
+  sTime.Hours = 22;
+  sTime.Minutes = 24;
+  sTime.Seconds = 30;
   sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
   sTime.StoreOperation = RTC_STOREOPERATION_RESET;
   if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN) != HAL_OK)
   {
     Error_Handler();
   }
-  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
+  sDate.WeekDay = RTC_WEEKDAY_SUNDAY;
   sDate.Month = RTC_MONTH_JANUARY;
-  sDate.Date = 1;
-  sDate.Year = 0;
+  sDate.Date = 26;
+  sDate.Year = 20;
   if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN) != HAL_OK)
   {
     Error_Handler();
